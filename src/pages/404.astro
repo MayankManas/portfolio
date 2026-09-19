@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+import { getResume } from '../lib/content';
+
+const { basics } = getResume();
+---
+
+<Base title="Page not found" noindex>
+  <div class="u-page notfound">
+    <p class="u-eyebrow">404</p>
+    <h1>That page doesn&rsquo;t exist</h1>
+    <p class="notfound__body">
+      It may have been renamed, or the link may be wrong. Everything on this site
+      is reachable from the homepage.
+    </p>
+    <p class="notfound__links">
+      <a href="/">Homepage</a>
+      <a href="/resume.pdf">Résumé (PDF)</a>
+      <a href={`mailto:${basics.email}`}>{basics.email}</a>
+    </p>
+  </div>
+</Base>
+
+<style>
+  .notfound {
+    padding-block: var(--space-2xl);
+    max-width: var(--measure);
+  }
+
+  .notfound h1 {
+    font-size: var(--text-section);
+    margin: var(--space-sm) 0 var(--space-md);
+  }
+
+  .notfound__body {
+    color: var(--ink-muted);
+  }
+
+  .notfound__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+  }
+</style>

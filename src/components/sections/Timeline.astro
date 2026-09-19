@@ -1,0 +1,352 @@
+---
+import SectionShell from './SectionShell.astro';
+import Chip from '../Chip.astro';
+import type { Section, WorkEntry, EducationEntry } from '../../lib/schema';
+import { normalizeTimelineEntry, VISIBLE_HIGHLIGHTS } from '../../lib/timeline';
+import { formatDate } from '../../lib/formatDate';
+
+/**
+ * The spine-threaded experience section - the hard one.
+ *
+ * THE RULE THAT MATTERS: every highlight is in the HTML, always. The overflow
+ * past the first two is inside a <details>, which keeps it in the DOM, keyboard
+ * accessible and readable with JS off. It is never conditionally rendered.
+ * A scraper that ignores CSS receives all 21 bullets.
+ *
+ * Work and education are normalised to one shape in lib/timeline.ts, so there
+ * is no branching on entry type here.
+ */
+interface Props {
+  section: Section;
+  data: unknown;
+}
+
+const { section, data } = Astro.props;
+const entries = (data as (WorkEntry | EducationEntry)[]).map(normalizeTimelineEntry);
+
+const hasHiddenContent = entries.some((entry) =>
+  entry.groups.some((group) => group.highlights.length > VISIBLE_HIGHLIGHTS)
+);
+
+const expandAllId = `${section.id}-expand-all`;
+let chipIndex = 0;
+---
+
+<SectionShell id={section.id} title={section.title}>
+  {
+    hasHiddenContent && (
+      <button
+        type="button"
+        class="expand-all"
+        id={expandAllId}
+        data-target={section.id}
+        data-collapsed-label="Expand all detail"
+        data-expanded-label="Collapse all detail"
+        hidden
+        aria-expanded="false"
+      >
+        Expand all detail
+      </button>
+    )
+  }
+
+  <div class="timeline" data-timeline={section.id}>
+    {
+      entries.map((entry) => {
+        const start = formatDate(entry.startDate);
+        const end = formatDate(entry.endDate);
+
+        return (
+          <article class="entry">
+            <header class="entry__head">
+              <div>
+                <h3 class="entry__title">{entry.title}</h3>
+                <p class="entry__role">{entry.role}</p>
+                {entry.subtitle && <p class="entry__subtitle">{entry.subtitle}</p>}
+              </div>
+              <p class="entry__dates">
+                <time datetime={start.datetime}>{start.display}</time>
+                <span aria-hidden="true"> – </span>
+                {end.datetime ? (
+                  <time datetime={end.datetime}>{end.display}</time>
+                ) : (
+                  <span>{end.display}</span>
+                )}
+                {entry.location && <span class="entry__location">{entry.location}</span>}
+              </p>
+            </header>
+
+            {entry.summary && <p class="entry__summary">{entry.summary}</p>}
+            {entry.note && <p class="entry__note">{entry.note}</p>}
+
+            {entry.bullets.length > 0 && (
+              <ul class="bullets">
+                {entry.bullets.map((bullet) => (
+                  <li>{bullet}</li>
+                ))}
+              </ul>
+            )}
+
+            {entry.groups.length > 0 && (
+              <ol class="workstreams">
+                {entry.groups.map((group) => {
+                  const shown = group.highlights.slice(0, VISIBLE_HIGHLIGHTS);
+                  const rest = group.highlights.slice(VISIBLE_HIGHLIGHTS);
+
+                  return (
+                    <li class="workstream">
+                      <h4 class="workstream__name">{group.name}</h4>
+
+                      {group.tech.length > 0 && (
+                        <p class="workstream__tech">
+                          {group.tech.map((tech) => (
+                            <Chip label={tech} index={chipIndex++} />
+                          ))}
+                        </p>
+                      )}
+
+                      <ul class="bullets">
+                        {shown.map((highlight) => (
+                          <li>{highlight}</li>
+                        ))}
+                      </ul>
+
+                      {rest.length > 0 && (
+                        <details class="more">
+                          <summary>
+                            <span class="more__label">
+                              {rest.length} more {rest.length === 1 ? 'highlight' : 'highlights'}
+                            </span>
+                          </summary>
+                          <ul class="bullets">
+                            {rest.map((highlight) => (
+                              <li>{highlight}</li>
+                            ))}
+                          </ul>
+                        </details>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </article>
+        );
+      })
+    }
+  </div>
+</SectionShell>
+
+<style>
+  .expand-all {
+    margin-bottom: var(--space-md);
+    padding: 0.3em 0.75em;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .expand-all:hover {
+    color: var(--ink);
+    border-color: var(--rule-strong);
+  }
+
+  /* ---- the spine -------------------------------------------------------- */
+  .entry {
+    position: relative;
+    padding-left: var(--space-lg);
+  }
+
+  .entry + .entry {
+    margin-top: var(--space-xl);
+  }
+
+  .entry::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    bottom: 0;
+    width: 1px;
+    background: var(--rule);
+  }
+
+  .entry::after {
+    content: '';
+    position: absolute;
+    left: -3px;
+    top: 0.45em;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .entry__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-xs) var(--space-md);
+  }
+
+  .entry__title {
+    font-size: var(--text-entry);
+    margin: 0;
+  }
+
+  .entry__role {
+    margin: var(--space-2xs) 0 0;
+    color: var(--ink);
+  }
+
+  .entry__subtitle {
+    margin: var(--space-2xs) 0 0;
+    color: var(--ink-muted);
+    font-size: var(--text-sm);
+  }
+
+  .entry__dates {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    color: var(--ink-muted);
+    text-align: right;
+  }
+
+  .entry__location {
+    display: block;
+    color: var(--ink-faint);
+  }
+
+  .entry__summary {
+    margin: var(--space-md) 0 0;
+    max-width: var(--measure);
+    color: var(--ink-muted);
+  }
+
+  .entry__note {
+    margin: var(--space-xs) 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    color: var(--ink-muted);
+  }
+
+  /* ---- workstreams ------------------------------------------------------- */
+  .workstreams {
+    list-style: none;
+    margin: var(--space-lg) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .workstream__name {
+    font-size: var(--text-body);
+    font-weight: 620;
+    margin: 0 0 var(--space-xs);
+  }
+
+  .workstream__tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin: 0 0 var(--space-sm);
+  }
+
+  .bullets {
+    /* Tailwind's preflight resets list-style to none. Navigation lists want
+       that; bullets that carry content do not. */
+    list-style: disc;
+    margin: 0;
+    padding-left: 1.1em;
+    max-width: var(--measure);
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .bullets li {
+    color: var(--ink-muted);
+  }
+
+  .bullets li::marker {
+    color: var(--accent);
+  }
+
+  /* ---- progressive disclosure -------------------------------------------
+     CSS only. The content inside <details> ships in the HTML whether or not
+     the element is open. */
+  .more {
+    margin-top: var(--space-xs);
+  }
+
+  .more summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    list-style: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    color: var(--accent);
+    width: fit-content;
+  }
+
+  .more summary::before {
+    content: '+';
+    display: inline-block;
+    width: 1ch;
+    transition: transform var(--dur-fast) var(--ease);
+  }
+
+  .more[open] summary::before {
+    content: '−';
+  }
+
+  .more summary:hover .more__label {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .more[open] .bullets {
+    margin-top: var(--space-xs);
+  }
+
+  @media (max-width: 40rem) {
+    .entry__dates {
+      text-align: left;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Expand-all is a convenience layer on top of the per-workstream <details>.
+   * It is hidden until JS confirms it works, because with JS off each
+   * <details> still opens on its own and every bullet is already in the DOM -
+   * nothing is lost, so there is nothing to polyfill.
+   */
+  for (const button of document.querySelectorAll<HTMLButtonElement>('.expand-all')) {
+    const id = button.dataset.target;
+    const scope = document.querySelector<HTMLElement>(`[data-timeline="${id}"]`);
+    if (!scope) continue;
+
+    button.hidden = false;
+
+    button.addEventListener('click', () => {
+      const expand = button.getAttribute('aria-expanded') !== 'true';
+      for (const details of scope.querySelectorAll('details')) {
+        details.open = expand;
+      }
+      button.setAttribute('aria-expanded', String(expand));
+      button.textContent = expand
+        ? (button.dataset.expandedLabel ?? 'Collapse all detail')
+        : (button.dataset.collapsedLabel ?? 'Expand all detail');
+    });
+  }
+</script>

@@ -1,0 +1,54 @@
+# robots.txt
+#
+# AI crawlers are explicitly ALLOWED. Many hosts and templates block these by
+# default; here the opposite is wanted. Companies screen candidates with AI
+# before a human reads anything, so being readable by these agents is the
+# point of the site, not a risk to it.
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+# Conventional search crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Everything else
+User-agent: *
+Allow: /
+
+# /resume is the print source for the PDF and is noindex; the PDF itself is
+# public and meant to be read.
+Sitemap: https://TODO.pages.dev/sitemap-index.xml

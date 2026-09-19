@@ -1,0 +1,32 @@
+---
+/**
+ * The homepage. One loop.
+ *
+ * This file must never learn what any particular section IS. There is no
+ * `section.id === 'work'` here and there must never be: the moment a section
+ * needs special handling in this file, adding a section stops being a content
+ * edit and the whole design has failed.
+ *
+ * Sections come from site.yaml in order, already resolved and validated.
+ */
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import ScrollSpy from '../components/ScrollSpy.astro';
+import { SECTION_COMPONENTS } from '../components/sections';
+import { getSections } from '../lib/content';
+
+const sections = getSections();
+---
+
+<Base>
+  <Hero />
+
+  <ScrollSpy sections={sections.map(({ section }) => section)} />
+
+  {
+    sections.map(({ section, data }) => {
+      const Section = SECTION_COMPONENTS[section.layout];
+      return <Section section={section} data={data} />;
+    })
+  }
+</Base>

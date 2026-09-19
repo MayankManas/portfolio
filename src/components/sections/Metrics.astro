@@ -1,0 +1,137 @@
+---
+import SectionShell from './SectionShell.astro';
+import type { Section } from '../../lib/schema';
+import type { z } from 'zod';
+import type { metricItemSchema } from '../../lib/schema';
+
+/**
+ * The quantified-impact section. A <dl> because that is what it is: terms and
+ * their values, which is also how a scraper should read it.
+ *
+ * The figures are rendered at their FINAL value server-side. The count-up is
+ * an enhancement that rewrites a real text node - there is no canvas, no SVG
+ * text, and nothing to see only if JS runs.
+ */
+interface Props {
+  section: Section;
+  data: unknown;
+}
+
+type Metric = z.infer<typeof metricItemSchema>;
+
+const { section, data } = Astro.props;
+const items = data as Metric[];
+---
+
+<SectionShell id={section.id} title={section.title}>
+  <dl class="metrics">
+    {
+      items.map((item) => (
+        <div class="metric">
+          <dd class="metric__value" data-countup={item.value}>
+            {item.value}
+          </dd>
+          <dt class="metric__label">
+            {item.label}
+            {item.sublabel && <span class="metric__sublabel">{item.sublabel}</span>}
+          </dt>
+        </div>
+      ))
+    }
+  </dl>
+</SectionShell>
+
+<style>
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: var(--space-lg) var(--space-md);
+    margin: 0;
+  }
+
+  .metric {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--rule);
+  }
+
+  /* <dd> before <dt> reads correctly here: the figure is the headline and the
+     label explains it. Order in the DOM matches reading order either way. */
+  .metric__value {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-figure);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-tight);
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  .metric__label {
+    font-size: var(--text-meta);
+    line-height: 1.45;
+    color: var(--ink-muted);
+  }
+
+  .metric__sublabel {
+    display: block;
+    color: var(--ink-faint);
+  }
+</style>
+
+<script>
+  /**
+   * Counts a figure up to the value already in the DOM. Parses the numeric
+   * part and keeps whatever wraps it ("~", ",", "%"), so the final frame is
+   * byte-identical to the server-rendered text.
+   *
+   * No aria-live is set, so a screen reader reads the value when it reaches
+   * it rather than announcing every frame.
+   */
+  const nodes = document.querySelectorAll<HTMLElement>('[data-countup]');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (nodes.length > 0 && !reduced.matches) {
+    const animate = (el: HTMLElement) => {
+      const final = el.dataset.countup ?? '';
+      const match = final.match(/^(\D*)([\d,]+(?:\.\d+)?)(.*)$/);
+      if (!match) return;
+
+      const [, prefix, digits, suffix] = match;
+      const grouped = digits!.includes(',');
+      const target = Number(digits!.replace(/,/g, ''));
+      if (!Number.isFinite(target)) return;
+
+      const duration = 900;
+      const start = performance.now();
+
+      const frame = (now: number) => {
+        const t = Math.min((now - start) / duration, 1);
+        // ease-out cubic: fast first, settles on the real number
+        const value = Math.round(target * (1 - Math.pow(1 - t, 3)));
+        el.textContent =
+          prefix + (grouped ? value.toLocaleString('en-US') : String(value)) + suffix;
+        if (t < 1) requestAnimationFrame(frame);
+        else el.textContent = final; // guarantee an exact match at the end
+      };
+
+      el.textContent = prefix + '0' + suffix;
+      requestAnimationFrame(frame);
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          animate(entry.target as HTMLElement);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    for (const node of nodes) observer.observe(node);
+  }
+</script>

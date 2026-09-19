@@ -1,0 +1,74 @@
+# ==============================================================================
+# Deliberately TRACKED, despite looking like generated files. Do not add these:
+#
+#   package-lock.json      `npm ci` in CI requires it and fails without it
+#   docs/screenshots/*.png CONTENT.md's layout catalogue references them inline
+#
+# Note on patterns below: they are all specific. Broad globs like *secret* or
+# *token* are tempting and wrong — *token* matches src/styles/tokens.css, which
+# holds the entire design system, and CI would deploy an unstyled site.
+# ==============================================================================
+
+# ---- secrets and credentials -------------------------------------------------
+# Nothing here should ever exist in the repo. Cloudflare and GitHub credentials
+# belong in GitHub Actions secrets, never in a file.
+.env
+.env.*
+!.env.example
+
+# Wrangler keeps local secrets here
+.dev.vars
+.dev.vars.*
+
+# can contain a registry auth token
+.npmrc
+
+# certificates and private keys
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+
+# ---- build output ------------------------------------------------------------
+# dist/ is rebuilt by CI on every push, resume.pdf and og.png included.
+dist/
+.astro/
+*.tsbuildinfo
+
+# ---- dependencies ------------------------------------------------------------
+node_modules/
+*.tgz
+
+# ---- local tool state --------------------------------------------------------
+.wrangler/
+.cloudflared/
+.cache/
+
+# ---- test and audit output ---------------------------------------------------
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+coverage/
+
+# scratch files from local verification (pdftotext dumps, ad-hoc reports)
+scratch-*
+
+# ---- logs --------------------------------------------------------------------
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# ---- editors -----------------------------------------------------------------
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*~
+
+# ---- os ----------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/

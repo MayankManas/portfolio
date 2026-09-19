@@ -1,0 +1,145 @@
+---
+import SectionShell from './SectionShell.astro';
+import Chip from '../Chip.astro';
+import type { Project, Section } from '../../lib/schema';
+import { real } from '../../lib/placeholder';
+
+/**
+ * Project grid. A `slug` on the item is what turns a card into a case-study
+ * link - the build already guarantees the matching markdown file exists, so
+ * the link can never dangle.
+ */
+interface Props {
+  section: Section;
+  data: unknown;
+}
+
+const { section, data } = Astro.props;
+const projects = data as Project[];
+
+// A TODO repo URL is dropped rather than rendered as a link that 404s.
+const repoOf = (p: Project) => real(p.links?.repo);
+const demoOf = (p: Project) => real(p.links?.demo);
+let chipIndex = 0;
+---
+
+<SectionShell id={section.id} title={section.title}>
+  <ul class="cards">
+    {
+      projects.map((project) => (
+        <li>
+          <article class="card">
+            <h3 class="card__title">
+              {project.slug ? (
+                <a href={`/projects/${project.slug}`}>{project.name}</a>
+              ) : (
+                project.name
+              )}
+            </h3>
+
+            <p class="card__blurb">{project.blurb}</p>
+
+            {project.highlights.length > 0 && (
+              <ul class="card__highlights">
+                {project.highlights.map((highlight) => (
+                  <li>{highlight}</li>
+                ))}
+              </ul>
+            )}
+
+            {project.stack.length > 0 && (
+              <p class="card__stack">
+                {project.stack.map((tech) => (
+                  <Chip label={tech} index={chipIndex++} />
+                ))}
+              </p>
+            )}
+
+            <p class="card__links">
+              {project.slug && (
+                <a class="card__cta" href={`/projects/${project.slug}`}>
+                  Read case study <span aria-hidden="true">→</span>
+                </a>
+              )}
+              {repoOf(project) && <a href={repoOf(project)}>Repository</a>}
+              {demoOf(project) && <a href={demoOf(project)}>Demo</a>}
+            </p>
+          </article>
+        </li>
+      ))
+    }
+  </ul>
+</SectionShell>
+
+<style>
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: var(--space-md);
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    height: 100%;
+    padding: var(--space-md);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+
+  .card:hover {
+    border-color: var(--rule-strong);
+  }
+
+  .card__title {
+    font-size: var(--text-entry);
+    margin: 0;
+  }
+
+  .card__blurb {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: var(--text-sm);
+  }
+
+  .card__highlights {
+    list-style: disc; /* see the note in Timeline.astro */
+    margin: 0;
+    padding-left: 1.1em;
+    display: grid;
+    gap: var(--space-2xs);
+    font-size: var(--text-sm);
+    color: var(--ink-muted);
+  }
+
+  .card__highlights li::marker {
+    color: var(--accent);
+  }
+
+  .card__stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin: 0;
+  }
+
+  /* Pushed to the bottom so cards of different heights align their actions. */
+  .card__links {
+    margin: auto 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    padding-top: var(--space-xs);
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+  }
+
+  .card__cta {
+    color: var(--accent);
+  }
+</style>

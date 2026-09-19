@@ -1,0 +1,145 @@
+---
+import SectionShell from './SectionShell.astro';
+import Chip from '../Chip.astro';
+import type { Section, SkillGroup } from '../../lib/schema';
+
+/**
+ * Labelled rows of chips. No percentage bars - "React 85%" is a number with no
+ * referent, and it is unparseable besides.
+ *
+ * 13 groups at once is noise, so `priority: secondary` groups sit inside a
+ * <details>. Same rule as the timeline: all 13 ship in the HTML regardless,
+ * and all 13 go in the PDF.
+ */
+interface Props {
+  section: Section;
+  data: unknown;
+}
+
+const { section, data } = Astro.props;
+const groups = data as SkillGroup[];
+
+const primary = groups.filter((group) => group.priority === 'primary');
+const secondary = groups.filter((group) => group.priority !== 'primary');
+let chipIndex = 0;
+
+// Kept outside the template so the chip stagger runs continuously across both
+// lists rather than restarting inside the <details>.
+const rows = (list: SkillGroup[]) =>
+  list.map((group) => ({
+    group,
+    chips: group.keywords.map((keyword) => ({ keyword, index: chipIndex++ })),
+  }));
+
+const primaryRows = rows(primary);
+const secondaryRows = rows(secondary);
+---
+
+<SectionShell id={section.id} title={section.title}>
+  <dl class="tags">
+    {
+      primaryRows.map(({ group, chips }) => (
+        <div class="tags__row">
+          <dt class="u-eyebrow">{group.group}</dt>
+          <dd class="tags__chips">
+            {chips.map(({ keyword, index }) => (
+              <Chip label={keyword} index={index} />
+            ))}
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  {
+    secondaryRows.length > 0 && (
+      <details class="more">
+        <summary>
+          <span class="more__label">
+            {secondaryRows.length} more skill groups
+          </span>
+        </summary>
+        <dl class="tags">
+          {secondaryRows.map(({ group, chips }) => (
+            <div class="tags__row">
+              <dt class="u-eyebrow">{group.group}</dt>
+              <dd class="tags__chips">
+                {chips.map(({ keyword, index }) => (
+                  <Chip label={keyword} index={index} />
+                ))}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </details>
+    )
+  }
+</SectionShell>
+
+<style>
+  .tags {
+    margin: 0;
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  .tags__row {
+    display: grid;
+    grid-template-columns: minmax(9rem, 13rem) 1fr;
+    gap: var(--space-xs) var(--space-md);
+    align-items: baseline;
+    padding-top: var(--space-xs);
+    border-top: 1px solid var(--rule);
+  }
+
+  .tags__row dt {
+    padding-top: 0.15em;
+  }
+
+  .tags__chips {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+  }
+
+  .more {
+    margin-top: var(--space-md);
+  }
+
+  .more summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    list-style: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    color: var(--accent);
+    width: fit-content;
+  }
+
+  .more summary::before {
+    content: '+';
+    display: inline-block;
+    width: 1ch;
+  }
+
+  .more[open] summary::before {
+    content: '−';
+  }
+
+  .more summary:hover .more__label {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .more[open] .tags {
+    margin-top: var(--space-md);
+  }
+
+  @media (max-width: 40rem) {
+    .tags__row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

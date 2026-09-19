@@ -1,0 +1,211 @@
+/* =============================================================================
+   print.css - the resume sheet. Deliberately plainer than the website.
+   Loaded only by /resume, which exists to be printed to PDF.
+
+   ATS rules encoded here, each one a real parser failure mode:
+     - ONE column. Multi-column layouts get read across, interleaving lines
+       from unrelated entries into nonsense.
+     - No tables for layout. Same problem, plus cell-order ambiguity.
+     - No icon fonts, no glyph bullets. An icon font character extracts as a
+       private-use codepoint or as a random letter.
+     - No background colours carrying meaning. They do not print and do not
+       extract.
+     - Conventional heading text. Parsers look for the literal words.
+     - Real text, selectable. Nothing rendered as an image.
+   ========================================================================== */
+
+@page {
+  size: A4;
+  /* 12mm keeps the sheet inside every common printer's imageable area
+     while buying back roughly a page of vertical space. */
+  margin: 12mm;
+}
+
+:root {
+  /* Fixed light palette: this sheet is printed, never themed. */
+  --paper: #ffffff;
+  --sheet-ink: #111111;
+  --sheet-muted: #3d3d3d;
+  --sheet-rule: #b9b9b9;
+  --sheet-font:
+    'Helvetica Neue', Helvetica, Arial, 'Liberation Sans', sans-serif;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--sheet-ink);
+  font-family: var(--sheet-font);
+  font-size: 9pt;
+  line-height: 1.26;
+  margin: 0;
+  padding: 0;
+}
+
+.sheet {
+  max-width: 186mm;
+  margin: 0 auto;
+  padding: 10mm 0;
+}
+
+@media print {
+  .sheet {
+    padding: 0;
+  }
+}
+
+/* ---- header --------------------------------------------------------------- */
+.sheet__name {
+  font-size: 18pt;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.sheet__label {
+  margin: 1.2mm 0 0;
+  font-size: 10pt;
+  color: var(--sheet-muted);
+}
+
+/* A plain wrapped line of text, not a table and not a flex grid of columns:
+   contact details must extract as one readable run. */
+.sheet__contact {
+  margin: 2mm 0 0;
+  font-size: 8.6pt;
+  color: var(--sheet-muted);
+}
+
+.sheet__summary {
+  margin: 2.6mm 0 0;
+  text-align: left;
+}
+
+/* ---- sections ------------------------------------------------------------- */
+.sheet h2 {
+  font-size: 9.4pt;
+  /* NO letter-spacing, and no text-transform.
+     Tracking made pdftotext read "EDUCATION" as "E D U C AT I O N" - the
+     glyph gaps exceeded its word-space threshold - so an ATS searching for
+     the literal heading found nothing. The headings are written uppercase in
+     the markup instead, so their extracted text depends on no CSS at all. */
+  font-weight: 700;
+  margin: 4.2mm 0 1.6mm;
+  padding-bottom: 0.8mm;
+  border-bottom: 0.5pt solid var(--sheet-rule);
+  /* Never leave a heading alone at the foot of a page. */
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.sheet h3 {
+  font-size: 9.8pt;
+  margin: 2.6mm 0 0;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.sheet h4 {
+  font-size: 9pt;
+  margin: 1.8mm 0 0.5mm;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.entry {
+  break-inside: avoid-page;
+}
+
+.entry + .entry {
+  margin-top: 3mm;
+}
+
+.entry__line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6mm;
+}
+
+.entry__meta {
+  margin: 0.4mm 0 0;
+  color: var(--sheet-muted);
+  font-size: 8.6pt;
+}
+
+.entry__dates {
+  white-space: nowrap;
+  color: var(--sheet-muted);
+  font-size: 8.6pt;
+}
+
+/* ---- bullets ---------------------------------------------------------------
+   Real <ul>/<li> with the browser's own disc marker. A "•" typed into the text
+   would extract as a literal character in the middle of every line. */
+.sheet ul {
+  margin: 0.7mm 0 0;
+  padding-left: 4.2mm;
+}
+
+.sheet li {
+  margin: 0.5mm 0;
+  break-inside: avoid;
+}
+
+.workstream {
+  break-inside: avoid-page;
+  margin-top: 1.8mm;
+}
+
+.workstream__tech {
+  margin: 0;
+  font-size: 8.4pt;
+  color: var(--sheet-muted);
+}
+
+/* ---- skills ----------------------------------------------------------------
+   A definition list, not a table: <dt>/<dd> pairs extract as "Group: a, b, c". */
+.skills {
+  margin: 0;
+}
+
+.skills__row {
+  margin-top: 1mm;
+}
+
+.skills__group {
+  font-weight: 700;
+  display: inline;
+}
+
+.skills__group::after {
+  content: ': ';
+}
+
+.skills__keywords {
+  display: inline;
+  margin: 0;
+  color: var(--sheet-muted);
+}
+
+/* ---- projects --------------------------------------------------------------- */
+.project {
+  break-inside: avoid-page;
+  margin-top: 2.2mm;
+}
+
+.project__blurb {
+  margin: 0.5mm 0 0;
+  color: var(--sheet-muted);
+}
+
+.project__link {
+  font-size: 8.4pt;
+  color: var(--sheet-muted);
+  word-break: break-all;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

@@ -1,0 +1,63 @@
+---
+import SectionShell from './SectionShell.astro';
+import type { Profile, Section } from '../../lib/schema';
+import { isTodo } from '../../lib/placeholder';
+
+/**
+ * A row of profile links. Renders exactly what it is given - adding a contact
+ * method is a new entry under basics.profiles, not a change here.
+ *
+ * Values are emitted verbatim and unobfuscated, so they survive extraction.
+ */
+interface Props {
+  section: Section;
+  data: unknown;
+}
+
+const { section, data } = Astro.props;
+// Profiles whose URL is still a placeholder are omitted; the hero reports them.
+const profiles = (data as Profile[]).filter((p) => !isTodo(p.url));
+---
+
+<SectionShell id={section.id} title={section.title}>
+  <ul class="contact">
+    {
+      profiles.map((profile) => (
+        <li class="contact__item">
+          <span class="u-eyebrow">{profile.network}</span>
+          <a href={profile.url} rel="me">
+            {profile.username ?? profile.url}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</SectionShell>
+
+<style>
+  .contact {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: var(--space-md);
+  }
+
+  .contact__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    padding-top: var(--space-xs);
+    border-top: 1px solid var(--rule);
+  }
+
+  .contact__item a {
+    font-size: var(--text-lead);
+    text-decoration-color: var(--rule-strong);
+  }
+
+  .contact__item a:hover {
+    text-decoration-color: var(--accent);
+  }
+</style>

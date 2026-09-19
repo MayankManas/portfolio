@@ -1,0 +1,68 @@
+---
+import SectionShell from './SectionShell.astro';
+import type { Section } from '../../lib/schema';
+import type { z } from 'zod';
+import type { listItemSchema } from '../../lib/schema';
+
+/**
+ * Label + meta + optional link. The generic layout - talks, writing, awards,
+ * certifications, anything that is a labelled row. This is the layout that
+ * makes "add a brand-new section with zero code" true in practice.
+ */
+interface Props {
+  section: Section;
+  data: unknown;
+}
+
+const { section, data } = Astro.props;
+const items = data as z.infer<typeof listItemSchema>[];
+---
+
+<SectionShell id={section.id} title={section.title}>
+  <ul class="list">
+    {
+      items.map((item) => (
+        <li class="list__item">
+          <span class="list__label">
+            {item.href ? <a href={item.href}>{item.label}</a> : item.label}
+          </span>
+          {item.meta && <span class="list__meta">{item.meta}</span>}
+        </li>
+      ))
+    }
+  </ul>
+</SectionShell>
+
+<style>
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+  }
+
+  .list__item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-xs) var(--space-md);
+    padding-block: var(--space-sm);
+    border-top: 1px solid var(--rule);
+  }
+
+  .list__item:last-child {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .list__label {
+    max-width: var(--measure);
+  }
+
+  .list__meta {
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+</style>

@@ -1,0 +1,33 @@
+---
+import '../styles/print.css';
+
+/**
+ * The A4 shell for /resume. Deliberately shares nothing with Base.astro: no
+ * nav, no theme toggle, no scripts, no webfonts. Everything Base adds for the
+ * website is noise in a PDF, and several of those things (icon glyphs, themed
+ * colours) actively break ATS extraction.
+ *
+ * noindex: this route exists to be printed. The PDF it produces is the public
+ * artifact; a second HTML copy of the resume competing with the homepage in
+ * search results helps nobody.
+ */
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+  <body>
+    <main class="sheet">
+      <slot />
+    </main>
+  </body>
+</html>

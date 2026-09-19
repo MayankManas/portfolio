@@ -1,0 +1,101 @@
+# ==============================================================================
+# site.yaml — presentation only. THIS is the file you edit to change what the
+# site shows.
+#
+#   Add a section      -> append to `sections`
+#   Reorder the site   -> reorder `sections`
+#   Hide a section     -> delete or comment out its entry
+#
+# Every section supplies EITHER `source` (a dotted path into resume.yaml) OR
+# inline `items`. Never both.
+#
+# Available layouts: prose · metrics · timeline · cards · tags · list · contact
+# (catalogue in docs/02-design.md)
+#
+# YAML indentation is 2 spaces, never tabs.
+# ==============================================================================
+
+meta:
+  title: Mayank Manas — Backend SDE-2
+  description: >-
+    Backend engineer (5+ YOE) building release infrastructure and AI-assisted
+    engineering tooling for enterprise security products. Java, Spring Boot, AWS.
+  url: https://TODO.pages.dev      # set once Cloudflare Pages project exists
+
+theme:
+  accent: "#2563eb"
+  mode: system                     # system | light | dark (initial default)
+
+sections:
+  # ---- About -----------------------------------------------------------------
+  - id: about
+    title: null                    # null = render without a section heading
+    layout: prose
+    source: basics.headline
+
+  # ---- Impact ----------------------------------------------------------------
+  # His strongest section: pure quantified impact, straight from the résumé.
+  # Sits second because it is the fastest possible proof.
+  - id: impact
+    title: Impact
+    layout: metrics
+    items:
+      - label: OS/DB combinations under coverage
+        value: "~300"
+      - label: Configuration permutations modeled
+        value: "~10,000"
+      - label: Test environments per release cycle
+        value: "~700"
+      - label: Customer cloud infrastructure cost reduced
+        value: "11%"
+      - label: Faster deployment and service boot-up
+        value: "30%"
+
+  # ---- Experience ------------------------------------------------------------
+  # Renders with progressive disclosure: workstream name + tech + top 2
+  # highlights visible, the rest inside <details>. All highlights stay in the
+  # HTML so scrapers receive everything.
+  - id: experience
+    title: Experience
+    layout: timeline
+    source: work
+
+  # ---- Projects --------------------------------------------------------------
+  # Below Experience on purpose: at 5+ YOE the job history is the evidence and
+  # side projects are the supporting exhibit. Inverting that reads junior.
+  - id: projects
+    title: Projects
+    layout: cards
+    source: projects
+
+  # ---- Skills ----------------------------------------------------------------
+  - id: skills
+    title: Technical Skills
+    layout: tags
+    source: skills
+
+  # ---- Education -------------------------------------------------------------
+  - id: education
+    title: Education
+    layout: timeline
+    source: education
+
+  # ---- Contact ---------------------------------------------------------------
+  - id: contact
+    title: Contact
+    layout: contact
+    source: basics.profiles
+
+# ------------------------------------------------------------------------------
+# EXAMPLE — adding a brand-new section requires zero code. Uncomment to try:
+#
+#  - id: talks
+#    title: Talks & Writing
+#    layout: list
+#    items:
+#      - label: Designing compatibility matrices that don't rot
+#        meta: JUG Delhi · Nov 2026
+#        href: https://example.com/talk
+#      - label: Human-in-the-loop safeguards for data-mutating agents
+#        meta: Internal tech talk · 2026
+# ------------------------------------------------------------------------------

@@ -1,0 +1,179 @@
+---
+import '../styles/global.css';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import { getResume, getSite } from '../lib/content';
+import { buildPersonJsonLd } from '../lib/jsonld';
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+}
+
+const site = getSite();
+const { title, description = site.meta.description, noindex = false } = Astro.props;
+
+// site.meta.title already reads "Name — Role"; appending it whole to a page
+// title gives two em dashes, so subpages get just the name.
+const siteName = site.meta.title.split('—')[0].trim();
+const pageTitle = title ? `${title} — ${siteName}` : site.meta.title;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'http://localhost').href;
+
+// theme.accent is content, so it is injected rather than compiled in. The
+// schema already guarantees it is a hex colour, so no re-check here.
+const accent = site.theme.accent;
+
+// site.yaml's theme.mode is the *initial default* for visitors who have not
+// chosen: 'system' defers to prefers-color-scheme, 'light'/'dark' force one.
+const initialMode = site.theme.mode;
+const year = new Date().getFullYear();
+
+// Built from resume.yaml on every render, so the structured data and the
+// visible page cannot disagree. Emitted on every route: it describes the
+// person, not the page.
+const jsonLd = JSON.stringify(buildPersonJsonLd(getResume(), site.meta.url));
+const ogImage = new URL('/og.png', Astro.site ?? 'http://localhost').href;
+---
+
+<html
+  lang="en"
+  style={`--accent:${accent}`}
+  data-theme={initialMode === 'system' ? undefined : initialMode}
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="generator" content={Astro.generator} />
+
+    {/* Lets a crawler that prefers data over markup find it without guessing. */}
+    <link
+      rel="alternate"
+      type="application/json"
+      href="/api/portfolio.json"
+      title="Portfolio data"
+    />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="Summary for language models" />
+
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content={site.meta.title} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {/* schema.org Person. set:html because this is JSON, not markup. */}
+    <script type="application/ld+json" is:inline set:html={jsonLd} />
+
+    {/* Applies the stored choice before first paint, so there is no flash of
+        the wrong theme. Must be inline and synchronous. */}
+    <script is:inline data-initial-mode={initialMode}>
+      (() => {
+        const root = document.documentElement;
+        let stored = null;
+        try {
+          stored = localStorage.getItem('theme');
+        } catch {
+          /* blocked storage — fall through to the system preference */
+        }
+        if (stored === 'light' || stored === 'dark') {
+          root.setAttribute('data-theme', stored);
+        }
+        const forced = root.getAttribute('data-theme');
+        const dark =
+          forced === 'dark' ||
+          (forced !== 'light' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+        root.setAttribute('data-resolved-theme', dark ? 'dark' : 'light');
+      })();
+    </script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="u-page site-header__inner">
+        <a class="site-header__mark" href="/">{siteName}</a>
+        <ThemeToggle />
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="u-page site-footer__inner">
+        <p>&copy; {year} {siteName}</p>
+        <p class="u-eyebrow">Built from content/*.yaml</p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .skip-link {
+    position: absolute;
+    left: var(--space-md);
+    top: var(--space-md);
+    z-index: 10;
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--bg-raised);
+    border: 1px solid var(--rule-strong);
+    border-radius: 4px;
+    text-decoration: none;
+    transform: translateY(-250%);
+    transition: transform var(--dur) var(--ease);
+  }
+
+  .skip-link:focus-visible {
+    transform: translateY(0);
+  }
+
+  .site-header {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .site-header__inner,
+  .site-footer__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    min-height: 3.5rem;
+  }
+
+  .site-header__mark {
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--ink-muted);
+  }
+
+  .site-header__mark:hover {
+    color: var(--ink);
+  }
+
+  .site-footer {
+    margin-top: var(--space-2xl);
+    border-top: 1px solid var(--rule);
+    color: var(--ink-muted);
+    font-size: var(--text-meta);
+  }
+
+  .site-footer__inner {
+    padding-block: var(--space-md);
+  }
+</style>

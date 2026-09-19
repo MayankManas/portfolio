@@ -1,0 +1,176 @@
+---
+/**
+ * /resume - the print source for /resume.pdf.
+ *
+ * Same data as the homepage, different rules. Nothing is collapsed here: all
+ * 21 highlights and all 13 skill groups render expanded, because there is no
+ * screen-reading human to spare and an ATS wants everything.
+ *
+ * Section ORDER is fixed and conventional rather than driven by site.yaml.
+ * That is deliberate: ATS parsers look for the literal headings WORK
+ * EXPERIENCE / EDUCATION / TECHNICAL SKILLS / PROJECTS in a familiar order,
+ * so this is a compatibility requirement, not a design choice. Adding a new
+ * KIND of resume section is therefore the one content change that also needs
+ * code - noted in CONTENT.md.
+ */
+import Print from '../layouts/Print.astro';
+import { getResume } from '../lib/content';
+import { formatRange } from '../lib/formatDate';
+import { real } from '../lib/placeholder';
+import { asciify } from '../lib/ascii';
+
+const { basics, work, education, skills, projects } = getResume();
+
+const location = [real(basics.location.city), real(basics.location.region), basics.location.country]
+  .filter(Boolean)
+  .join(', ');
+
+// One wrapped line of plain text. Deliberately not a table or a column grid:
+// both scramble under extraction.
+const contact = [
+  location,
+  basics.email,
+  real(basics.phone),
+  ...basics.profiles.map((profile) => real(profile.url)),
+].filter((part): part is string => Boolean(part));
+
+// Everything printed goes through asciify - see src/lib/ascii.ts for why.
+const strip = asciify;
+---
+
+<Print title={`${basics.name} - Resume`}>
+  <header>
+    <h1 class="sheet__name">{strip(basics.name)}</h1>
+    <p class="sheet__label">{strip(basics.label)}</p>
+    <p class="sheet__contact">{strip(contact.join('  |  '))}</p>
+    <p class="sheet__summary">{strip(basics.headline)}</p>
+  </header>
+
+  <section>
+    <h2>WORK EXPERIENCE</h2>
+    {
+      work.map((job) => {
+        const range = formatRange(job.startDate, job.endDate);
+        return (
+          <div class="entry">
+            <div class="entry__line">
+              <h3>
+                {strip(`${job.position}, ${job.company}`)}
+              </h3>
+              <span class="entry__dates">
+                <time datetime={range.start.datetime}>{range.start.display}</time>
+                {' - '}
+                {range.end.datetime ? (
+                  <time datetime={range.end.datetime}>{range.end.display}</time>
+                ) : (
+                  range.end.display
+                )}
+              </span>
+            </div>
+            {(job.client || job.location) && (
+              <p class="entry__meta">
+                {strip(
+                  [job.client && `Client: ${job.client}`, job.location]
+                    .filter(Boolean)
+                    .join('  |  ')
+                )}
+              </p>
+            )}
+            {job.summary && <p class="entry__meta">{strip(job.summary)}</p>}
+
+            {job.workstreams.map((workstream) => (
+              <div class="workstream">
+                <h4>{strip(workstream.name)}</h4>
+                {workstream.tech.length > 0 && (
+                  <p class="workstream__tech">{strip(workstream.tech.join(', '))}</p>
+                )}
+                <ul>
+                  {workstream.highlights.map((highlight) => (
+                    <li>{strip(highlight)}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        );
+      })
+    }
+  </section>
+
+  <section>
+    <h2>TECHNICAL SKILLS</h2>
+    <dl class="skills">
+      {
+        skills.map((group) => (
+          <div class="skills__row">
+            <dt class="skills__group">{strip(group.group)}</dt>
+            <dd class="skills__keywords">{strip(group.keywords.join(', '))}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section>
+    <h2>PROJECTS</h2>
+    {
+      projects.map((project) => {
+        const repo = real(project.links?.repo);
+        return (
+          <div class="project">
+            <div class="entry__line">
+              <h3>{strip(project.name)}</h3>
+              {project.stack.length > 0 && (
+                <span class="entry__dates">{strip(project.stack.join(', '))}</span>
+              )}
+            </div>
+            <p class="project__blurb">{strip(project.blurb)}</p>
+            {project.highlights.length > 0 && (
+              <ul>
+                {project.highlights.map((highlight) => (
+                  <li>{strip(highlight)}</li>
+                ))}
+              </ul>
+            )}
+            {repo && <p class="project__link">{strip(repo)}</p>}
+          </div>
+        );
+      })
+    }
+  </section>
+
+  <section>
+    <h2>EDUCATION</h2>
+    {
+      education.map((entry) => {
+        const range = formatRange(entry.startDate, entry.endDate);
+        return (
+          <div class="entry">
+            <div class="entry__line">
+              <h3>
+                {strip(`${entry.degree}, ${entry.institution}`)}
+              </h3>
+              <span class="entry__dates">
+                <time datetime={range.start.datetime}>{range.start.display}</time>
+                {' - '}
+                {range.end.datetime ? (
+                  <time datetime={range.end.datetime}>{range.end.display}</time>
+                ) : (
+                  range.end.display
+                )}
+              </span>
+            </div>
+            {entry.score && <p class="entry__meta">{strip(entry.score)}</p>}
+            {entry.awards.length > 0 && (
+              <ul>
+                {entry.awards.map((award) => (
+                  <li>{strip(award)}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      })
+    }
+  </section>
+</Print>

@@ -1,0 +1,125 @@
+---
+/**
+ * Sticky position indicator, desktop only.
+ *
+ * Built from the sections it is handed, never a hardcoded list - reordering
+ * site.yaml reorders this too. Sections with `title: null` are skipped, since
+ * there is nothing to label them with.
+ *
+ * It is plain anchor links, so it works entirely without JS; the JS only adds
+ * the "you are here" highlight.
+ */
+interface Props {
+  sections: { id: string; title: string | null }[];
+}
+
+const { sections } = Astro.props;
+const targets = sections.filter(
+  (section): section is { id: string; title: string } => section.title !== null
+);
+---
+
+{
+  targets.length > 1 && (
+    <nav class="spy" aria-label="Sections">
+      <ol>
+        {targets.map((section) => (
+          <li>
+            <a href={`#${section.id}`} data-spy-link={section.id}>
+              {section.title}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<style>
+  .spy {
+    display: none;
+  }
+
+  /* Only where there is room for it beside the content column. */
+  @media (min-width: 78rem) {
+    .spy {
+      display: block;
+      position: fixed;
+      top: 50%;
+      left: max(var(--space-md), calc(50vw - var(--page-max) / 2 - 11rem));
+      width: 9.5rem;
+      transform: translateY(-50%);
+      z-index: 5;
+    }
+
+    .spy ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: var(--space-2xs);
+      border-left: 1px solid var(--rule);
+    }
+
+    .spy a {
+      display: block;
+      padding: 0.15em 0 0.15em var(--space-sm);
+      margin-left: -1px;
+      border-left: 1px solid transparent;
+      font-family: var(--font-mono);
+      font-size: var(--text-meta);
+      /* was --ink-faint, which measured 2.96:1 - below AA for 12.5px text */
+      color: var(--ink-muted);
+      text-decoration: none;
+      transition:
+        color var(--dur-fast) var(--ease),
+        border-color var(--dur-fast) var(--ease);
+    }
+
+    .spy a:hover {
+      color: var(--ink);
+    }
+
+    .spy a[aria-current='true'] {
+      color: var(--ink);
+      border-left-color: var(--accent);
+    }
+  }
+</style>
+
+<script>
+  const links = document.querySelectorAll<HTMLAnchorElement>('[data-spy-link]');
+  if (links.length > 0) {
+    const byId = new Map<string, HTMLAnchorElement>();
+    for (const link of links) byId.set(link.dataset.spyLink!, link);
+
+    const sections = [...byId.keys()]
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    const mark = (id: string | undefined) => {
+      for (const [key, link] of byId) {
+        if (key === id) link.setAttribute('aria-current', 'true');
+        else link.removeAttribute('aria-current');
+      }
+    };
+
+    // Track which sections are on screen and highlight the topmost, rather
+    // than whichever fired last - otherwise scrolling up picks the wrong one.
+    const visible = new Set<string>();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
+        }
+        const topmost = sections.find((section) => visible.has(section.id));
+        mark(topmost?.id);
+      },
+      { rootMargin: '-20% 0px -70% 0px' }
+    );
+
+    for (const section of sections) observer.observe(section);
+  }
+</script>

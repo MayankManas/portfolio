@@ -1,0 +1,29 @@
+# Line endings.
+#
+# This project is authored on Windows (CRLF) and built in GitHub Actions on
+# Linux. Without normalisation, the first CI checkout can show every file as
+# wholly modified, and diffs become unreadable.
+#
+# text=auto lets git detect text files; eol=lf stores AND checks out LF
+# everywhere, so the working tree matches what CI sees.
+* text=auto eol=lf
+
+# Explicitly binary — never normalise, never diff as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+
+# Generated. Collapsed in pull request diffs, still tracked and still required
+# by `npm ci`.
+package-lock.json -diff linguist-generated=true
+
+# GitHub language stats: screenshots and planning docs are not source.
+docs/** linguist-documentation=true

@@ -1,0 +1,38 @@
+---
+import SectionShell from './SectionShell.astro';
+import type { Section } from '../../lib/schema';
+
+/**
+ * A block of prose. Blank lines separate paragraphs; the text is emitted
+ * verbatim, so nothing decorative enters the extracted content.
+ */
+interface Props {
+  section: Section;
+  data: unknown;
+}
+
+const { section, data } = Astro.props;
+const paragraphs = String(data)
+  .split(/\n\s*\n/)
+  .map((p) => p.trim())
+  .filter(Boolean);
+---
+
+<SectionShell id={section.id} title={section.title}>
+  <div class="prose">
+    {paragraphs.map((p) => <p>{p}</p>)}
+  </div>
+</SectionShell>
+
+<style>
+  .prose {
+    max-width: var(--measure);
+    font-size: var(--text-lead);
+    line-height: var(--leading-snug);
+    color: var(--ink-muted);
+  }
+
+  .prose p + p {
+    margin-top: var(--space-md);
+  }
+</style>

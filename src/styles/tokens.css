@@ -1,0 +1,114 @@
+/* =============================================================================
+   tokens.css — the entire visual vocabulary.
+   Palette, type scale, spacing and motion. Nothing else in the codebase should
+   hardcode a color or a font size.
+
+   Theming contract (three states, deliberately):
+     :root                                       -> light, the base definition
+     @media (prefers-color-scheme: dark)         -> dark, only when the user has
+       guarded as :root:not([data-theme="light"])   not forced light
+     :root[data-theme="dark"]                    -> dark, forced by the toggle
+
+   Every color is DEFINED on bare :root and only REDEFINED in the dark blocks,
+   so no value exists solely inside a media query.
+   ============================================================================= */
+
+:root {
+  /* ---- accent -------------------------------------------------------------
+     Overridden at runtime by Base.astro from site.yaml's theme.accent, so
+     changing the site's accent stays a content edit. This is the fallback. */
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+
+  /* ---- surfaces & ink ---------------------------------------------------- */
+  --bg: #fcfcfb;
+  --bg-raised: #f5f5f2;
+  --ink: #15151a;
+  --ink-muted: #63636e;
+  --ink-faint: #6f6f7b; /* 4.83:1 on --bg - AA for small text */
+  --rule: #e4e4de;
+  --rule-strong: #cfcfc7;
+
+  /* ---- type families ------------------------------------------------------
+     System stacks only: no webfont request, no icon font (an ATS hard rule),
+     nothing to block first paint. */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Inter, Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', 'Cascadia Mono', 'Roboto Mono',
+    Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* ---- type scale ---------------------------------------------------------
+     Deliberately wide. The size contrast between a section header, an entry
+     title and body text is what carries the editorial direction; without it
+     the page reads as undifferentiated grey. */
+  --text-meta: 0.78125rem;                        /* dates, tech chips, labels */
+  --text-sm: 0.875rem;
+  --text-body: 1.0625rem;
+  --text-lead: clamp(1.125rem, 0.95rem + 0.6vw, 1.3125rem);
+  --text-entry: clamp(1.1875rem, 1.05rem + 0.5vw, 1.375rem);   /* entry titles */
+  --text-section: clamp(1.5rem, 1.2rem + 1.1vw, 2rem);      /* section headers */
+  --text-display: clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem);          /* the name */
+  --text-figure: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);     /* metric numerals  */
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-body: 1.65;
+
+  --tracking-tight: -0.022em;
+  --tracking-wide: 0.08em;   /* eyebrow / small-caps labels */
+
+  /* ---- space -------------------------------------------------------------- */
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1.25rem;
+  --space-lg: 2rem;
+  --space-xl: 3.25rem;
+  --space-2xl: clamp(4rem, 3rem + 4vw, 6.5rem);   /* between page sections */
+
+  --measure: 68ch;           /* prose line length */
+  --page-max: 62rem;
+  --page-gutter: clamp(1.25rem, 0.6rem + 3vw, 3rem);
+
+  /* ---- motion -------------------------------------------------------------
+     Zeroed wholesale under prefers-reduced-motion below, so components can use
+     these freely without each repeating the media query. */
+  --dur-fast: 120ms;
+  --dur: 220ms;
+  --dur-slow: 600ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* dark — system preference, unless the toggle has forced light */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0d0d0f;
+    --bg-raised: #17171b;
+    --ink: #ededee;
+    --ink-muted: #9b9ba5;
+    --ink-faint: #85858f; /* 5.32:1 on --bg */
+    --rule: #26262c;
+    --rule-strong: #3a3a42;
+  }
+}
+
+/* dark — forced by the toggle, in either system state */
+:root[data-theme='dark'] {
+  --bg: #0d0d0f;
+  --bg-raised: #17171b;
+  --ink: #ededee;
+  --ink-muted: #9b9ba5;
+  --ink-faint: #85858f; /* 5.32:1 on --bg */
+  --rule: #26262c;
+  --rule-strong: #3a3a42;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur: 0ms;
+    --dur-slow: 0ms;
+  }
+}

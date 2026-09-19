@@ -1,0 +1,298 @@
+# ==============================================================================
+# resume.yaml — the canonical facts. Drives BOTH the website and /resume.pdf.
+#
+# Transcribed from MayankManasAug2026.pdf during planning. Items marked TODO
+# need the user's input.
+#
+# Dates are quoted by convention. The YAML 1.2 core schema this parser uses has
+# no implicit timestamp type, so it is not strictly required - it just keeps
+# every date looking the same.
+#
+# Full field reference: docs/03-architecture.md. Recipes: CONTENT.md (once built).
+# YAML indentation is 2 spaces, never tabs.
+# ==============================================================================
+
+basics:
+  name: Mayank Manas
+  label: Backend SDE-2 · Java, Spring Boot, AWS
+
+  # The one claim the whole site argues. See docs/02-design.md.
+  headline: >-
+    Backend engineer (5+ YOE) building release infrastructure and AI-assisted
+    engineering tooling for enterprise security products. I work on the systems
+    that decide what ships, how it's validated, and how it's kept secure.
+
+  email: iammayank.manas@gmail.com
+
+  # Public in both the HTML and the PDF. An earlier plan kept this out of the
+  # HTML, but /resume.pdf is publicly linked and robots.txt deliberately invites
+  # AI crawlers, so hiding it from one of the two bought nothing.
+  phone: "+91-8700833759"
+
+  location:
+    city: Delhi NCR
+    country: India
+
+  # Shown above the fold. TODO: confirm exact wording with the user.
+  availability: Open to backend and infrastructure roles
+
+  profiles:
+    - network: GitHub
+      username: mayankmanas
+      url: https://github.com/mayankmanas
+    - network: LinkedIn
+      username: mayankmanas
+      url: https://www.linkedin.com/in/mayankmanas/
+
+# ------------------------------------------------------------------------------
+# work — note the three-level nesting: work -> workstreams -> highlights.
+# This deviates from the JSON Resume standard on purpose: a long tenure with
+# distinct programs of work is modeled badly by a flat highlight list, and this
+# shape is what makes the timeline's progressive disclosure natural.
+# Do not flatten it.
+# ------------------------------------------------------------------------------
+work:
+  - company: Coriolis Technologies
+    position: SDE II
+    client: Thales Cybersecurity
+    location: India
+    startDate: "2021-07"
+    endDate: null            # null renders as "Present"
+    summary: >-
+      Engineering and release infrastructure for Imperva's database auditing
+      Agent — a component installed on database servers and hosts to audit,
+      monitor and secure database activity.
+
+    workstreams:
+      - name: Internal Data Coverage & Compatibility Platform
+        tech: [Java 8, Spring Boot, MySQL]
+        highlights:
+          - >-
+            Designed and developed the Internal Data Coverage Tool (IDCT), a Java 8,
+            Spring Boot and MySQL platform used by ~40 engineers across 3 teams to
+            manage Agent compatibility across ~300 OS/DB combinations and ~10,000
+            configuration permutations.
+          - >-
+            Architected the data model, backend APIs and UI to represent and manage
+            multi-dimensional compatibility across OS/DB versions, Agent modes,
+            database configurations, encryption modes and other supported dimensions.
+          - >-
+            Own the integration of the compatibility platform with the OS/DB support
+            release pipeline, mapping support progression from development and
+            certification through automation testing and final release coverage.
+          - >-
+            Own Agent compatibility coverage, serving as the focal point for
+            determining supported configurations, tracking coverage changes and
+            history, and maintaining accurate OS/DB compatibility information through
+            the release lifecycle.
+
+      - name: Agent Release Infrastructure
+        tech: [Java, Linux, Windows, GDB]
+        highlights:
+          - >-
+            Developed features for a Java-based remote execution service within the
+            Agent testing platform, exposing APIs used by automation workflows to
+            execute operations on remote Linux and Windows test machines.
+          - >-
+            Developed a cross-platform core-dump diagnostics API that remotely
+            retrieves crash dumps, processes them using native GDB, and returns
+            structured diagnostic information including failure details, memory and
+            heap information, and timestamps for developer debugging.
+          - >-
+            Developed and maintained Java-based utilities and supporting services
+            powering the Agent testing platform, implementing feature enhancements
+            and resolving defects across the system.
+          - >-
+            Owned a 28-day monthly Agent release cycle, coordinating validation
+            across ~700 test environments, triaging failures, communicating defects
+            with upstream development teams, and verifying fixes through subsequent
+            test runs.
+
+      - name: AI-Assisted Engineering
+        tech: [Python, Google ADK, Amazon Bedrock, Browser Automation]
+        highlights:
+          - >-
+            Developed and deployed Python-based AI agents using Google ADK and Amazon
+            Bedrock to automate release validation and Agent compatibility workflows
+            used by engineering teams.
+          - >-
+            Built an AI-powered release task validator that generates expected release
+            permutations using OS/DB Cartesian products, applies maintained exclusions
+            and support-date constraints, and compares expected coverage against
+            release tasks to identify missing permutations.
+          - >-
+            Developed a vendor compatibility agent that dynamically discovers and
+            extracts OS/DB compatibility from vendor documentation and web-based
+            compatibility matrices using web crawling and browser automation,
+            classifies findings for human verification, and generates bulk
+            compatibility updates through backend APIs.
+          - >-
+            Implemented human-in-the-loop safeguards and persistent vendor-source
+            context for compatibility discovery, requiring user validation before
+            modifying compatibility data while retaining verified vendor sources for
+            subsequent analysis.
+
+      - name: File Tokenization & Encryption Proxy
+        tech: [Java, AWS S3, Azure, IBM COS, SFTP]
+        highlights:
+          - >-
+            Engineered file tokenization and encryption pipelines for enterprise
+            systems, supporting stream and field-level encryption in Java across
+            diverse file types and storage systems.
+          - >-
+            Designed multi-cloud data protection across AWS S3, Azure, IBM COS and
+            SFTP, enabling secure handling of sensitive data across heterogeneous
+            customer environments.
+          - >-
+            Implemented RBAC and multi-tenancy to provide fine-grained access control
+            and scalable tenant isolation for enterprise deployments.
+
+      - name: SaaS Metrics & Resource Usage Platform
+        tech: [Kubernetes, Metrics Pipelines]
+        highlights:
+          - >-
+            Built a resource tracking and optimization platform for SaaS deployments,
+            collecting pod-level metrics across customer environments to guide
+            resource allocation and scaling.
+          - >-
+            Enabled data-driven resource allocation, reducing customer cloud
+            infrastructure costs by ~11%.
+
+      - name: REST API Based Encryption / Masking Service
+        tech: [Spring Boot, REST]
+        highlights:
+          - >-
+            Developed a secure Spring Boot microservice exposing REST APIs for
+            encryption, decryption and data masking, with unit, integration and
+            end-to-end test coverage.
+
+      - name: Dynamic Configuration Management System
+        tech: [Java, Distributed Systems]
+        highlights:
+          - >-
+            Developed a configuration management system for distributed services,
+            enabling dynamic cluster configuration and runtime resolution.
+          - >-
+            Reduced deployment and service boot-up times by ~30% through dynamic
+            configuration management.
+
+      - name: Performance Benchmarking Tool
+        tech: [GitHub Actions]
+        highlights:
+          - >-
+            Developed and automated a GitHub Actions-based benchmarking system to
+            compare deployment performance across branches and releases and detect
+            performance regressions early.
+
+education:
+  - institution: Chitkara University
+    degree: B.E. Computer Science Engineering
+    startDate: "2017-07"
+    endDate: "2021-06"
+    score: CGPA 9.3
+    awards:
+      - Scholar award for being in the top 1% of graduates
+
+# ------------------------------------------------------------------------------
+# skills — all 13 groups always ship in the HTML and in the PDF.
+# priority controls presentation only: `primary` groups render expanded on the
+# site, `secondary` groups collapse behind a "show all" <details>.
+# This avoids per-item curation churn while keeping the page calm.
+# ------------------------------------------------------------------------------
+skills:
+  - group: Programming Languages
+    priority: primary
+    keywords: [Java, Python, JavaScript]
+
+  - group: Backend
+    priority: primary
+    keywords:
+      [REST APIs, Microservices, WebSockets, OpenAPI, Event-Driven Architecture,
+       Remote Execution]
+
+  - group: Frameworks
+    priority: primary
+    keywords: [Spring Boot, Spring Cloud, Google ADK, Playwright, Selenium]
+
+  - group: AI & LLM
+    priority: primary
+    keywords:
+      [Amazon Bedrock, Google ADK, AI Agents, LLM-based Workflow Automation]
+
+  - group: Cloud
+    priority: primary
+    keywords: [AWS EC2, AWS S3, AWS Lambda, AWS IAM, AWS ECS, AWS SQS, AWS ELB]
+
+  - group: Design
+    priority: primary
+    keywords:
+      [Data Structures & Algorithms, LLD, HLD, Distributed Systems,
+       Database Schema Design]
+
+  - group: Databases
+    priority: secondary
+    keywords: [MySQL, NoSQL, Elasticsearch]
+
+  - group: Containerization
+    priority: secondary
+    keywords: [Docker, Kubernetes]
+
+  - group: CI/CD
+    priority: secondary
+    keywords: [GitHub Actions]
+
+  - group: Monitoring & Logging
+    priority: secondary
+    keywords: [Kibana, Prometheus, Grafana]
+
+  - group: Queues
+    priority: secondary
+    keywords: [Kafka Streams]
+
+  - group: Security
+    priority: secondary
+    keywords: [JWT, RBAC, OAuth2, Data Encryption, Data Masking]
+
+  - group: Performance
+    priority: secondary
+    keywords:
+      [Caching, Load Balancing, JVM Performance Tuning, Thread Dump Analysis, GDB]
+
+# ------------------------------------------------------------------------------
+# projects
+# A `slug` is what creates a deep case study page. It requires a matching
+# content/projects/<slug>.md — the build fails if either side is missing.
+# No slug => the project renders as a card only.
+#
+# NOTE: ApplyPilot is deliberately absent. It is a third-party tool the user
+# uses to search and apply for jobs, NOT his project. Do not add it.
+# ------------------------------------------------------------------------------
+projects:
+  - name: FileServer
+    blurb: >-
+      Secure HTTPS file server for LAN environments — streaming I/O for files up
+      to 100 GB, path-traversal defense, IP whitelisting and structured logging.
+    stack: [TypeScript, Node.js, Express, Jest]
+    slug: fileserver              # flagship — has a case study
+    highlights:
+      - Streams files up to 100 GB without buffering
+      - HTTP Basic Auth with bcrypt, RFC1918 IP whitelist, rate limiting
+      - Winston structured JSON logging with rotation; jest + supertest coverage
+    links:
+      repo: https://github.com/Pickle-Pixel/FileServer   # TODO: confirm URL
+
+  - name: BFS/DFS Visualizer
+    blurb: >-
+      React application for visualizing graph traversal and node exploration in a
+      grid-based system.
+    stack: [React, JavaScript]
+    links:
+      repo: TODO
+
+  - name: Exercise Tracker
+    blurb: >-
+      Full-stack activity logging application with a React frontend and a
+      Node/Express API.
+    stack: [React, Node.js, Express, MongoDB]
+    links:
+      repo: TODO

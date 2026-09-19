@@ -1,0 +1,43 @@
+---
+/**
+ * A tech/skill token. Plain text in a bordered span - no icon font (an ATS
+ * rule that applies to the PDF, kept here so one component serves both).
+ */
+interface Props {
+  label: string;
+  /** stagger index, for the fade-in */
+  index?: number;
+}
+
+const { label, index = 0 } = Astro.props;
+---
+
+<span class="chip" style={`--chip-index:${index}`}>{label}</span>
+
+<style>
+  .chip {
+    display: inline-block;
+    padding: 0.15em 0.55em;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    line-height: 1.5;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .chip {
+      animation: chip-in var(--dur) var(--ease) backwards;
+      animation-delay: calc(var(--chip-index) * 28ms);
+    }
+  }
+
+  @keyframes chip-in {
+    from {
+      opacity: 0;
+      transform: translateY(3px);
+    }
+  }
+</style>

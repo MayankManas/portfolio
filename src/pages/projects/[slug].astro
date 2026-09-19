@@ -1,0 +1,275 @@
+---
+/**
+ * Case study pages. A page exists for every project in resume.yaml that
+ * declares a `slug` - the markdown file supplies the prose, resume.yaml still
+ * supplies the facts, so the card and the deep page can never disagree about
+ * the stack or the repo link.
+ */
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Chip from '../../components/Chip.astro';
+import { getResume } from '../../lib/content';
+import { crossValidate } from '../../lib/crossValidate';
+
+export async function getStaticPaths() {
+  const entries = (await getCollection('projects')).filter((entry) => entry.data.published);
+  const { projects } = getResume();
+
+  // The same bidirectional check `npm run validate` runs, enforced again here
+  // so a build can never emit an orphan page or a dead "read case study" link.
+  const errors = crossValidate({
+    projects,
+    caseStudySlugs: entries.map((entry) => entry.id),
+  });
+  if (errors.length > 0) {
+    throw new Error(`\ncontent/ is inconsistent:\n\n${errors.map((e) => `  - ${e}`).join('\n')}\n`);
+  }
+
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry, project: projects.find((p) => p.slug === entry.id)! },
+  }));
+}
+
+const { entry, project } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Base title={entry.data.title} description={entry.data.summary}>
+  <div class="progress" role="presentation" hidden>
+    <div class="progress__bar" id="reading-progress"></div>
+  </div>
+
+  <article class="study u-page">
+    <nav class="study__back" aria-label="Breadcrumb">
+      <a href="/#projects"><span aria-hidden="true">←</span> All projects</a>
+    </nav>
+
+    <header class="study__head">
+      <h1>{entry.data.title}</h1>
+      <p class="study__summary">{entry.data.summary}</p>
+
+      <dl class="study__facts">
+        {
+          entry.data.role && (
+            <div>
+              <dt class="u-eyebrow">Role</dt>
+              <dd>{entry.data.role}</dd>
+            </div>
+          )
+        }
+        {
+          project.links?.repo && (
+            <div>
+              <dt class="u-eyebrow">Source</dt>
+              <dd>
+                <a href={project.links.repo}>Repository</a>
+              </dd>
+            </div>
+          )
+        }
+      </dl>
+
+      {
+        project.stack.length > 0 && (
+          <p class="study__stack">
+            {project.stack.map((tech, index) => (
+              <Chip label={tech} index={index} />
+            ))}
+          </p>
+        )
+      }
+    </header>
+
+    <div class="study__body">
+      <Content />
+    </div>
+
+    <footer class="study__foot">
+      <a href="/#projects"><span aria-hidden="true">←</span> All projects</a>
+    </footer>
+  </article>
+</Base>
+
+<style>
+  .progress {
+    position: fixed;
+    inset: 0 0 auto;
+    height: 2px;
+    z-index: 20;
+    background: transparent;
+  }
+
+  .progress__bar {
+    height: 100%;
+    width: 100%;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+
+  .study {
+    max-width: 48rem;
+    padding-block: var(--space-xl) var(--space-2xl);
+  }
+
+  .study__back,
+  .study__foot {
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+  }
+
+  .study__foot {
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--rule);
+  }
+
+  .study__head {
+    margin-top: var(--space-lg);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .study__head h1 {
+    font-size: var(--text-display);
+    margin: 0;
+  }
+
+  .study__summary {
+    margin: var(--space-md) 0 0;
+    font-size: var(--text-lead);
+    line-height: var(--leading-snug);
+    color: var(--ink-muted);
+  }
+
+  .study__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-lg);
+    margin: var(--space-lg) 0 0;
+  }
+
+  .study__facts dd {
+    margin: var(--space-2xs) 0 0;
+  }
+
+  .study__stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin: var(--space-md) 0 0;
+  }
+
+  /* ---- rendered markdown ------------------------------------------------- */
+  .study__body {
+    margin-top: var(--space-xl);
+  }
+
+  .study__body :global(h2) {
+    font-size: var(--text-section);
+    margin: var(--space-xl) 0 var(--space-sm);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--rule);
+  }
+
+  /* The header already ends in a rule; a second one right under it reads as a
+     mistake. */
+  .study__body :global(h2:first-child) {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  /* Preflight strips list markers - content lists need them back. */
+  .study__body :global(ul) {
+    list-style: disc;
+    padding-left: 1.2em;
+  }
+
+  .study__body :global(ol) {
+    list-style: decimal;
+    padding-left: 1.2em;
+  }
+
+  .study__body :global(h3) {
+    font-size: var(--text-entry);
+    margin: var(--space-lg) 0 var(--space-xs);
+  }
+
+  .study__body :global(p),
+  .study__body :global(ul),
+  .study__body :global(ol) {
+    margin-block: var(--space-md);
+  }
+
+  .study__body :global(li) {
+    margin-block: var(--space-xs);
+  }
+
+  .study__body :global(li::marker) {
+    color: var(--accent);
+  }
+
+  .study__body :global(strong) {
+    font-weight: 620;
+    color: var(--ink);
+  }
+
+  .study__body :global(blockquote) {
+    margin: var(--space-md) 0;
+    padding-left: var(--space-md);
+    border-left: 2px solid var(--accent);
+    color: var(--ink-muted);
+  }
+
+  .study__body :global(pre) {
+    overflow-x: auto;
+    padding: var(--space-md);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--bg-raised);
+    font-size: var(--text-meta);
+  }
+
+  .study__body :global(:not(pre) > code) {
+    padding: 0.1em 0.35em;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--bg-raised);
+  }
+
+  .study__body :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+
+  .study__body :global(th),
+  .study__body :global(td) {
+    text-align: left;
+    padding: var(--space-xs) var(--space-sm) var(--space-xs) 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+</style>
+
+<script>
+  // Enhancement only - the bar stays hidden unless JS can actually drive it.
+  const bar = document.getElementById('reading-progress');
+  const track = bar?.parentElement;
+
+  if (bar && track) {
+    track.hidden = false;
+
+    const update = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const ratio = scrollable > 0 ? window.scrollY / scrollable : 0;
+      bar.style.transform = `scaleX(${Math.min(Math.max(ratio, 0), 1)})`;
+    };
+
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+  }
+</script>
