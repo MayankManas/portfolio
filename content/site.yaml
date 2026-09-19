@@ -20,7 +20,7 @@ meta:
   description: >-
     Backend engineer (5+ YOE) building release infrastructure and AI-assisted
     engineering tooling for enterprise security products. Java, Spring Boot, AWS.
-  url: https://TODO.pages.dev      # set once Cloudflare Pages project exists
+  url: https://mayankmanas.pages.dev
 
 theme:
   accent: "#2563eb"

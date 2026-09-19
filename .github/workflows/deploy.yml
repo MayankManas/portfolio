@@ -1,0 +1,80 @@
+# Build and deploy to Cloudflare Pages.
+#
+# Why the build runs here rather than in Cloudflare's own builder: generating
+# resume.pdf needs headless Chromium, which Cloudflare's build environment does
+# not reliably provide. Actions builds the whole thing and uploads the finished
+# dist/ with Wrangler, which also keeps it to one commit -> one deploy.
+#
+# The ordering is the safety property: validate runs FIRST and the deploy step
+# is last. A bad content edit fails validation, so nothing is built and nothing
+# is uploaded, and the previous deployment stays live. A red X on the commit,
+# never a broken homepage.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # Branch pushes get a Cloudflare preview URL; only main is production.
+  pull_request:
+  workflow_dispatch:
+
+# A newer push supersedes an in-flight one, but never cancel a production
+# deploy half-way through an upload.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Fast, schema-only. Fails before anything expensive runs.
+      - name: Validate content
+        run: npm run validate
+
+      - name: Type-check
+        run: npx astro check
+
+      - name: Build site
+        # `npm run build` is astro build + the asset step, which needs Chromium,
+        # so the browser is installed first.
+        run: |
+          npx playwright install --with-deps chromium
+          npm run build
+
+      # Proves the deployed artifact actually works: every highlight present
+      # with JS disabled, toggles functional, no console errors.
+      - name: Smoke test the built site
+        run: npm run smoke
+
+      - name: Verify the PDF has a real text layer
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+          pdftotext dist/resume.pdf - | grep -q "WORK EXPERIENCE" \
+            || { echo "::error::resume.pdf has no extractable text layer"; exit 1; }
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy dist
+            --project-name=mayankmanas
+            --branch=${{ github.head_ref || github.ref_name }}

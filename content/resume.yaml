@@ -54,7 +54,6 @@ basics:
 work:
   - company: Coriolis Technologies
     position: SDE II
-    client: Thales Cybersecurity
     location: India
     startDate: "2021-07"
     endDate: null            # null renders as "Present"
