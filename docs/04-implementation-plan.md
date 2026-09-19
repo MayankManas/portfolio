@@ -1,5 +1,22 @@
 # 04 — Implementation Plan
 
+> **Status: all phases complete. Live at https://mayankmanas.pages.dev.**
+>
+> This is the original build plan, kept as the record of intent. The notable deviations, all
+> deliberate:
+>
+> - **Astro 7**, not 5 — 5 was current when this was written.
+> - **Scaffolded by hand**, not `npm create astro`, which prompts on a non-empty directory.
+> - **Neither YAML file is a content collection.** Each is a single config object, not a set of
+>   entries. Both load through `src/lib/content.ts`; only `content/projects/*.md` is a collection.
+> - **Per-layout validation of resolved data was added.** Without it `layout: timeline` with
+>   `source: skills` passes every other check and fails deep inside a renderer.
+> - **`robots.txt` is generated**, not a static file in `public/` — as a static file its sitemap
+>   URL silently kept pointing at the placeholder domain after `meta.url` changed.
+> - **`scripts/build-assets.ts`** replaces `resume-pdf.mjs` and also renders the OG image.
+> - **`npm run smoke` and `npm run lighthouse` were added**, and smoke runs in CI.
+> - **Phase 9** (GitHub stars enrichment) was not built. Still optional.
+
 Build in this order. Each phase leaves the repo in a working state.
 
 ---

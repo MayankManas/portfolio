@@ -12,9 +12,14 @@
 name: Deploy
 
 on:
+  # Production. Merging a PR lands here and redeploys the live site.
   push:
     branches: [main]
-  # Branch pushes get a Cloudflare preview URL; only main is production.
+  # Every PR gets the full gate below AND a Cloudflare preview deployment at
+  # <branch>.mayankmanas.pages.dev, so a change can be seen before it merges.
+  #
+  # Note: a branch pushed WITHOUT an open PR runs nothing. Opening the PR is
+  # what triggers validation. That is deliberate - the PR is the review unit.
   pull_request:
   workflow_dispatch:
 

@@ -278,7 +278,7 @@ projects:
       - HTTP Basic Auth with bcrypt, RFC1918 IP whitelist, rate limiting
       - Winston structured JSON logging with rotation; jest + supertest coverage
     links:
-      repo: https://github.com/Pickle-Pixel/FileServer   # TODO: confirm URL
+      repo: https://github.com/mayankmanas/FileServer   # TODO: confirm URL
 
   - name: BFS/DFS Visualizer
     blurb: >-

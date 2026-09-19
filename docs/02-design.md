@@ -1,5 +1,9 @@
 # 02 — Design
 
+> **Status: built and live at https://mayankmanas.pages.dev.** Lighthouse scores 100 across
+> Performance, Accessibility, Best Practices, SEO and Agentic Browsing on both `/` and the case
+> study. Divergences from this document are marked **[changed]**.
+
 ## What the site argues
 
 One claim, stated in the hero and evidenced by everything below it:
@@ -53,7 +57,7 @@ chrome or decorative text.
 - One accent color applied with conviction (metric figures, hairline rules, link underlines, focus rings)
 - **Experience rendered as a vertical spine** threading company → workstreams, with the
   ~300 / ~10,000 / ~700 figures pulled out as inline callouts rather than buried in bullet prose
-- **Metric counters that count up** when scrolled into view (~15 lines of JS, animating real text nodes)
+- **Metric counters that count up** when scrolled into view, animating real text nodes. They render at their final value server-side, so they are correct with JS off, and land byte-identical on the last frame.
 - Skill chips stagger-fading in per group
 - A sticky scroll-spy nav on desktop showing position in the page
 - A reading-progress bar on case study pages
@@ -134,7 +138,7 @@ wanted.
 - `<time datetime="2021-07">` for every date — machine-readable, not just formatted text
 - Strict `h1 → h2 → h3` hierarchy, no skipped levels, no headings chosen for size
 - `<dl>` for the metrics section
-- Email as an unobfuscated `mailto:` link. Phone is `pdf-only` — see below.
+- Email as an unobfuscated `mailto:` link, **with the address as the link text** — an address that lives only in an `href` does not survive tag-stripping. **[changed]** Phone is public in both the HTML and the PDF; the `pdf-only` mode was dropped (see `01-requirements.md`).
 - `sitemap.xml`, `<meta name="description">`, OG and Twitter tags, an OG image
 
 ### 6. No text in images
@@ -152,8 +156,12 @@ The `/resume` print route is deliberately plainer than the website:
   total failure)
 - No icon fonts, no tables used for layout, no decorative glyphs
 - All 21 highlights and all 13 skill groups — nothing collapsed
-- Phone number included (it is `pdf-only`: present in the PDF, never in public HTML, so it isn't
-  harvested by scrapers while still reaching a recruiter who downloads the résumé)
+- Phone number included. **[changed]** It is also in the public HTML — see `01-requirements.md`.
+- **[added]** All text is forced to ASCII punctuation on the print route. A middot and en dash
+  extracted as U+FFFD, so the contact line came out as "India <?> email <?> phone". Separately,
+  `letter-spacing` on the section headings made `pdftotext` read "EDUCATION" as "E D U C AT I O N",
+  so an ATS searching for the literal heading found nothing. Both are fixed; both were only
+  visible by actually extracting the text.
 
 ### Verification
 

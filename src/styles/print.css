@@ -112,8 +112,14 @@ body {
   page-break-after: avoid;
 }
 
+/* Deliberately NOT break-inside: avoid-page.
+   A single work entry holds every workstream for that employer - here, eight
+   of them, about two pages of content. Telling the browser not to split it
+   cannot be honoured, so it bumps the whole entry to a fresh page and leaves
+   page one nearly empty. Breaks are avoided at the granular level instead:
+   .workstream, .project, individual list items, and headings. */
 .entry {
-  break-inside: avoid-page;
+  break-inside: auto;
 }
 
 .entry + .entry {

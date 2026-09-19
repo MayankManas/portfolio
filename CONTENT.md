@@ -27,10 +27,26 @@ npm install     # first time only
 npm run dev     # http://localhost:4321, reloads as you edit
 ```
 
-To check content without a full build — about a second:
+## Before you push
+
+Three commands, in increasing order of thoroughness. You will use the first two daily and the
+third only when you want certainty.
+
+| Command | Takes | What it is for |
+|---|---|---|
+| `npm run validate` | ~1 second | After any YAML edit. Catches nearly every content mistake and names the offending section. |
+| `npm run dev` | instant, hot-reloads | To **see** the change. http://localhost:4321, updates as you save. |
+| `npm run verify` | ~1 minute | Before pushing. Runs the exact gate CI runs. |
+
+`npm run verify` is validate → type-check → build → browser smoke test, in the same order as
+[.github/workflows/deploy.yml](.github/workflows/deploy.yml). **If it passes locally, the push
+will not fail the build.** That is the whole point of it.
+
+To look at the finished build exactly as it will be served — including `/resume.pdf` and
+`/og.png`, which only exist after a build:
 
 ```bash
-npm run validate
+npm run build && npm run preview     # http://localhost:4321
 ```
 
 ---
@@ -357,13 +373,33 @@ labelled row. Reach for this before asking for a new layout.
 
 ## Editing from your phone
 
-1. Open the repository on github.com.
-2. Press `.` — the full web editor opens in the browser.
-3. Edit `content/resume.yaml`, commit to `main`.
-4. Two minutes later it is live.
+Yes, entirely. Use **github.com in a mobile browser** — not the GitHub app, whose editor is poor.
+The `.` shortcut that opens github.dev needs a physical keyboard, so use the pencil instead.
 
-No laptop, no terminal. The build validates for you; if you get it wrong, the deploy is
-skipped and the current site stays up.
+### The safe flow: edit, PR, check, merge
+
+1. Open `content/resume.yaml` on github.com.
+2. Tap the **pencil** icon and make your edit.
+3. At the bottom choose **"Create a new branch and start a pull request"**.
+4. Open the PR. **CI runs the full gate on it** — validate, type-check, build, browser smoke test,
+   PDF text-layer check. Watch the tick on the PR page.
+5. CI also publishes a **preview** at `<branch>.mayankmanas.pages.dev`. Open it on your phone and
+   look at the actual rendered change.
+6. Green tick and preview looks right → **Merge**. That pushes to `main`, which redeploys the
+   live site. Two minutes.
+7. Red ✗ → open the failed run, read the error, edit the branch again. **The live site is
+   untouched the whole time.**
+
+### The fast flow: commit straight to main
+
+At step 3, choose "Commit directly to the `main` branch" instead. Same validation, same
+protection — a bad edit still fails the build and leaves the live site alone — you just skip the
+preview and find out afterwards rather than before.
+
+Use the PR flow when you want to *see* it first. Use the direct flow for a typo.
+
+> **One thing to know:** pushing a branch **without** opening a PR runs nothing at all — no
+> validation, no preview. Opening the PR is what triggers it.
 
 ---
 
@@ -386,6 +422,15 @@ Right layout, right path, wrong pairing. `timeline` reads `work` or `education`;
 **`project "FileServer": declares slug "fileserver" but content/projects/fileserver.md does
 not exist`**
 You added a slug without the file, or renamed one and not the other.
+
+**`links: Invalid input: expected object, received null`**
+You deleted or commented out a value but left its parent key behind. YAML turns a key with
+nothing under it into `null`, and optional means *absent*, not *null*. Delete the parent too:
+
+```yaml
+    links:                 # <- this line must go as well
+      repo: https://...    # <- not just this one
+```
 
 Also common: **`Unrecognized key: "hilights"`** — a misspelled field name. Unknown fields are
 rejected rather than silently ignored, because a silently ignored `hilights:` means your new

@@ -8,12 +8,13 @@
     "build": "astro build && npm run assets",
     "assets": "tsx scripts/build-assets.ts",
     "preview": "astro preview",
-    "check": "astro check",
     "validate": "tsx scripts/validate.ts",
-    "astro": "astro",
-    "screenshots": "tsx scripts/screenshots.ts",
+    "check": "astro check",
+    "verify": "npm run validate && npm run check && npm run build && npm run smoke",
     "smoke": "tsx scripts/smoke.ts",
-    "lighthouse": "tsx scripts/lighthouse.ts"
+    "screenshots": "tsx scripts/screenshots.ts",
+    "lighthouse": "tsx scripts/lighthouse.ts",
+    "astro": "astro"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.0.1",

@@ -10,6 +10,7 @@ import Base from '../../layouts/Base.astro';
 import Chip from '../../components/Chip.astro';
 import { getResume } from '../../lib/content';
 import { crossValidate } from '../../lib/crossValidate';
+import { real } from '../../lib/placeholder';
 
 export async function getStaticPaths() {
   const entries = (await getCollection('projects')).filter((entry) => entry.data.published);
@@ -33,6 +34,11 @@ export async function getStaticPaths() {
 
 const { entry, project } = Astro.props;
 const { Content } = await render(entry);
+
+// Via real(), like every other place a repo link is rendered. Reading
+// project.links?.repo directly turned a placeholder into <a href="TODO">, a
+// live 404 on the flagship page.
+const repo = real(project.links?.repo);
 ---
 
 <Base title={entry.data.title} description={entry.data.summary}>
@@ -59,11 +65,11 @@ const { Content } = await render(entry);
           )
         }
         {
-          project.links?.repo && (
+          repo && (
             <div>
               <dt class="u-eyebrow">Source</dt>
               <dd>
-                <a href={project.links.repo}>Repository</a>
+                <a href={repo}>Repository</a>
               </dd>
             </div>
           )

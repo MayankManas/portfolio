@@ -1,5 +1,9 @@
 # 01 — Requirements & Settled Decisions
 
+> **Status: built and live at https://mayankmanas.pages.dev.** The requirements below were met.
+> Two settled decisions were later revisited with the user and are marked **[revised]**; the open
+> items at the bottom are resolved.
+
 ## Why this project exists
 
 Mayank is job hunting as a Backend SDE-2 (5+ YOE, Java / Spring Boot / AWS, infrastructure
@@ -45,7 +49,7 @@ Each of these was explicitly chosen by the user. Do not revisit them without ask
 |---|---|---|---|
 | 1 | How content reaches production | **Commit → GitHub Actions → deploy (~2 min).** Fully static output. | Solves the stated pain completely with no server, no cold starts, best SEO, free forever. A real backend was considered and rejected: free tiers sleep, and a 30–50s cold start on a recruiter's first visit is the worst possible case. |
 | 2 | How far "never touch code" extends | **Generic section registry.** Sections are an ordered array; each declares a `layout` from a small registry. Adding a whole new section of an existing layout needs zero code. | Fixed sections would cover ~95% of edits but still require code for a new section type. Fully schemaless was rejected as building a CMS. |
-| 3 | Résumé | **One source generates both the website and `/resume.pdf`.** | He said the résumé is the thing that keeps changing. Two sources would recreate the double-maintenance problem exactly. |
+| 3 | Résumé | **One source generates both the website and `/resume.pdf`.** | He said the résumé is the thing that keeps changing. Two sources would recreate the double-maintenance problem exactly. **[revised]** The generated PDF is now the *canonical* résumé: it renders all 8 workstreams, 21 highlights and 13 skill groups, and replaces the hand-maintained one. |
 | 4 | Case study depth | **Markdown file per flagship project**; lesser projects are data-only cards. | Structured fields alone read thin for work worth explaining. |
 | 5 | Experience density | **Progressive disclosure** — workstream name + tech + top 2 highlights, with "show all" to expand. | His experience is 8 workstreams / ~21 bullets under one employer: correct for a PDF, a wall of text on screen. **Must be CSS-hidden, not JS-conditional**, so scrapers still receive every bullet. |
 | 6 | Visual direction | **Technical editorial** — typographic, one accent color, no stock imagery; interest from type, rhythm and restrained motion. | He asked for "professional but not too bland" plus scrapability. This direction's interest comes from typography rather than chrome, so it satisfies both. The terminal/systems direction was rejected on his own criterion: decorative prompt text (`~/mayank $ cat headline.txt`) pollutes extracted text, so an LLM summarizing the page ingests shell noise alongside real credentials. |
@@ -86,7 +90,22 @@ His work is for Thales Cybersecurity / Imperva. A public website is more exposed
 handed to a recruiter. The site stays at exactly the abstraction level his own résumé already uses
 and goes no deeper. He was advised to review this before launch.
 
-## Open items for him to fill in
+## Decisions revised after planning
+
+| Topic | Original | Now | Why |
+|---|---|---|---|
+| Phone visibility | `pdf-only` — in the PDF, never in public HTML | **Public in both** | `/resume.pdf` is publicly linked and `robots.txt` deliberately invites AI crawlers, so withholding it from one surface was protection in name only. Better to choose deliberately than to imply a safety that is not there. |
+| Client name | "Coriolis Technologies, client Thales Cybersecurity" | **Client name removed** | Confidentiality pass before launch. The product name (Imperva) was reviewed and deliberately kept. |
+
+## Open items — resolved
+
+- **Location** — Delhi NCR, India.
+- **LinkedIn URL** — https://www.linkedin.com/in/mayankmanas/
+- **"Open to" line** — "Open to backend and infrastructure roles".
+- **FileServer on the résumé** — still worth doing; `/resume.pdf` is now the canonical résumé.
+- **FileServer's repo link** — deliberately withheld for now; the case study stays.
+
+## Original open items (kept for the record)
 
 - **Location** — his résumé says only "India". `content/resume.yaml` has a `TODO`.
 - **LinkedIn URL** — `TODO` in `content/resume.yaml`.
