@@ -277,8 +277,12 @@ projects:
       - Streams files up to 100 GB without buffering
       - HTTP Basic Auth with bcrypt, RFC1918 IP whitelist, rate limiting
       - Winston structured JSON logging with rotation; jest + supertest coverage
-    links:
-      repo: https://github.com/mayankmanas/FileServer   # TODO: confirm URL
+    # No links block on purpose - the repo stays unadvertised for now. The case
+    # study at /projects/fileserver is driven by `slug`, not by links, so it is
+    # unaffected. To publish the repo later, restore BOTH lines together:
+    #   links:
+    #     repo: https://github.com/<user>/FileServer
+    # A bare `links:` with nothing under it fails the build - YAML reads it as null.
 
   - name: BFS/DFS Visualizer
     blurb: >-
